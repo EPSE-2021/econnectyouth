@@ -712,11 +712,13 @@ const NotificationsPanel=({onClose,nav})=>{
 // Real integration: see auth-integration.js reference file
 // ══════════════════════════════════════════════════════════
 const DEMO_USERS = [
-  {id:"u1", name:"Jordan Thompson",    email:"jordan.t@student.jcs.edu",      role:"Youth",    population:"MIDDLE_YOUTH",org:"Parker High School",    avatar:"JT", color:"#0C7A6A", bg:"#EDFAF6", provider:"microsoft", dob:"2010-04-15"},
-  {id:"u2", name:"Ms. Sarah Thompson", email:"s.thompson@gmail.com",           role:"Parent",   population:null,          org:"Parent / Guardian",     avatar:"ST", color:"#1D4ED8", bg:"#EFF6FF", provider:"google",     dob:null},
-  {id:"u3", name:"Tamara Johnson",     email:"tjohnson@jeffersonhigh.k12.al.us",role:"School",  population:null,          org:"Jefferson High School", avatar:"TJ", color:"#92400E", bg:"#FFFBEB", provider:"microsoft",  dob:null},
-  {id:"u4", name:"Fictional Provider — Dr. Marcus Williams",email:"m.williams@jcbh.org",role:"Provider",population:null,org:"Jefferson County BH",   avatar:"MW", color:"#047857", bg:"#ECFDF5", provider:"microsoft",  dob:null},
-  {id:"u5", name:"Maria Lopez",        email:"m.lopez@econnectyouth.org",      role:"Admin",    population:null,          org:"EPSE Enterprises LLC",  avatar:"ML", color:"#5B21B6", bg:"#F5F3FF", provider:"microsoft",  dob:null},
+  {id:"u1", name:"Jordan Thompson",    email:"jordan.t@student.jcs.edu",        role:"Youth",    population:"MIDDLE_YOUTH", org:"Parker High School",       avatar:"JT", color:"#0C7A6A", bg:"#EDFAF6", provider:"microsoft", dob:"2010-04-15", veteran:false},
+  {id:"u2", name:"Marcus Williams",    email:"m.williams22@gmail.com",           role:"Youth",    population:"OLDER_YOUTH",  org:"UAB — self-referral",      avatar:"MW", color:"#047857", bg:"#ECFDF5", provider:"google",    dob:"2003-06-18", veteran:false},
+  {id:"u3", name:"Robert V.",          email:"r.vasquez@veteranmail.com",        role:"Youth",    population:"VETERAN",      org:"Alabama VA Network",       avatar:"RV", color:"#7F1D1D", bg:"#FEE2E2", provider:"microsoft", dob:"1996-02-14", veteran:true, branch:"Army", era:"Post-9/11"},
+  {id:"u4", name:"Ms. Sarah Thompson", email:"s.thompson@gmail.com",             role:"Parent",   population:null,           org:"Parent / Guardian",        avatar:"ST", color:"#1D4ED8", bg:"#EFF6FF", provider:"google",    dob:null,         veteran:false},
+  {id:"u5", name:"Tamara Johnson",     email:"tjohnson@jeffersonhigh.k12.al.us", role:"School",   population:null,           org:"Jefferson High School",    avatar:"TJ", color:"#92400E", bg:"#FFFBEB", provider:"microsoft", dob:null,         veteran:false},
+  {id:"u6", name:"Fictional Provider — Dr. Marcus Williams",email:"mwilliams@jcbh.org",role:"Provider",population:null,   org:"Jefferson County BH",      avatar:"FP", color:"#047857", bg:"#ECFDF5", provider:"microsoft", dob:null,         veteran:false},
+  {id:"u7", name:"Maria Lopez",        email:"m.lopez@econnectyouth.org",        role:"Admin",    population:null,           org:"EPSE Enterprises LLC",     avatar:"ML", color:"#5B21B6", bg:"#F5F3FF", provider:"microsoft", dob:null,         veteran:false},
 ];
 
 const ROLE_DESCRIPTIONS = {
@@ -724,7 +726,16 @@ const ROLE_DESCRIPTIONS = {
   Parent:   {icon:"🏡", desc:"Manage your child's referral, consent settings, and stay connected with their care team."},
   School:   {icon:"🏫", desc:"Submit referrals, track student progress, and coordinate with care providers."},
   Provider: {icon:"🩺", desc:"Review referrals, conduct screenings, manage your caseload, and document sessions."},
-  Admin:    {icon:"🔗", desc:"Manage cases, match youth to providers, and monitor program analytics."},
+  Admin:    {icon:"🔗", desc:"Manage cases, match clients to providers, and monitor program analytics."},
+};
+
+// Population labels for sign-in display
+const POP_SIGN_IN_LABEL = {
+  EARLY_YOUTH:  {label:"Early Youth",  icon:"🌱", sub:"Ages 10–14"},
+  MIDDLE_YOUTH: {label:"Middle Youth", icon:"🌿", sub:"Ages 15–17"},
+  OLDER_YOUTH:  {label:"Older Youth",  icon:"🌳", sub:"Ages 18–24"},
+  ADULT:        {label:"Adult",        icon:"👤", sub:"Ages 25+"},
+  VETERAN:      {label:"Veteran",      icon:"🎖️", sub:"Military / Veteran"},
 };
 
 const SignInPage = ({onSignIn}) => {
@@ -874,6 +885,10 @@ const SignInPage = ({onSignIn}) => {
                   <div style={{flex:1}}>
                     <div style={{fontSize:13.5,fontWeight:700,color:"#111827"}}>{u.name}</div>
                     <div style={{fontSize:12,color:"#6B7280"}}>{u.email}</div>
+                    {u.population&&POP_SIGN_IN_LABEL[u.population]&&(
+                      <div style={{fontSize:11,color:u.color,fontWeight:700,marginTop:2}}>{POP_SIGN_IN_LABEL[u.population].icon} {POP_SIGN_IN_LABEL[u.population].label} · {POP_SIGN_IN_LABEL[u.population].sub}</div>
+                    )}
+                    {u.veteran&&<div style={{fontSize:11,color:"#B91C1C",fontWeight:700}}>🎖️ Veteran · {u.branch||""} {u.era||""}</div>}
                   </div>
                   <div style={{display:"flex",gap:6,alignItems:"center"}}>
                     <span style={{fontSize:11,background:u.bg,color:u.color,padding:"3px 9px",borderRadius:99,fontWeight:700,border:`1px solid ${u.color}25`}}>{ROLE_DESCRIPTIONS[u.role]?.icon} {u.role}</span>
@@ -4218,17 +4233,28 @@ const Home=({nav,setRole})=>(
       <div style={{position:"absolute",right:-40,top:-40,width:280,height:280,borderRadius:"50%",background:"rgba(255,255,255,.06)"}}/>
       <div style={{position:"relative",zIndex:2}}>
         <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(255,255,255,.16)",border:"1.5px solid rgba(255,255,255,.28)",borderRadius:99,padding:"5px 15px",fontSize:11,fontWeight:800,textTransform:"uppercase",letterSpacing:".08em",color:"white",marginBottom:18}}>
-          <div style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7"}}/>EPSE Enterprises LLC · Alabama Youth Mental Health Initiative
+          <div style={{width:6,height:6,borderRadius:"50%",background:"#6EE7B7"}}/>EPSE Enterprises LLC · Behavioral Health Coordination Platform
         </div>
         <h1 style={{fontFamily:"'Lora',serif",fontSize:42,fontWeight:700,color:"white",marginBottom:16,lineHeight:1.12}}>Connecting people to <em style={{color:"#A7F3D0"}}>care</em><br/>faster than ever before.</h1>
-        <p style={{fontSize:16,color:"rgba(255,255,255,.82)",maxWidth:500,marginBottom:30,lineHeight:1.7}}>A secure, HIPAA-informed, consent-aware coordination platform bridging schools, families, licensed providers, and community organizations.</p>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:32}}>
-          <Btn v="sec" sz="lg" onClick={()=>{setRole("Youth");nav("youth");}}>🌱 Youth Check-In</Btn>
-          <Btn sz="lg" onClick={()=>{setRole("School");nav("school");}} style={{background:"rgba(255,255,255,.15)",color:"white",border:"2px solid rgba(255,255,255,.3)"}}>📋 Submit Referral</Btn>
-          <Btn sz="lg" onClick={()=>nav("impact")} style={{background:"rgba(255,255,255,.1)",color:"white",border:"2px solid rgba(255,255,255,.2)"}}>💼 Impact Report</Btn>
+        <p style={{fontSize:16,color:"rgba(255,255,255,.82)",maxWidth:520,marginBottom:22,lineHeight:1.7}}>A secure, consent-aware behavioral health coordination platform serving youth, adults, and veterans — bridging schools, families, licensed providers, VA services, and community organizations across Alabama.</p>
+        {/* Population pills */}
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:24}}>
+          {[["🌱","Early Youth","10–14"],["🌿","Middle Youth","15–17"],["🌳","Older Youth","18–24"],["👤","Adult","25+"],["🎖️","Veteran","Military"]].map(([icon,label,sub])=>(
+            <div key={label} style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.25)",borderRadius:99,padding:"5px 13px"}}>
+              <span style={{fontSize:14}}>{icon}</span>
+              <span style={{fontSize:12,fontWeight:800,color:"white"}}>{label}</span>
+              <span style={{fontSize:11,color:"rgba(255,255,255,.65)"}}>{sub}</span>
+            </div>
+          ))}
         </div>
-        <div style={{display:"flex",gap:36,paddingTop:24,borderTop:"1px solid rgba(255,255,255,.2)",flexWrap:"wrap"}}>
-          {[["4,280","Youth served"],["3.2 days","Time to contact"],["18","Clinical modalities"],["21","EHR criteria"],["127","Partners"]].map(([n,l])=>(<div key={l}><div style={{fontSize:26,fontWeight:900,color:"white",lineHeight:1}}>{n}</div><div style={{fontSize:12,color:"rgba(255,255,255,.65)",marginTop:4}}>{l}</div></div>))}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:28}}>
+          <Btn v="sec" sz="lg" onClick={()=>{setRole("Youth");nav("youth");}}>🌱 Client Dashboard</Btn>
+          <Btn sz="lg" onClick={()=>{setRole("School");nav("school");}} style={{background:"rgba(255,255,255,.15)",color:"white",border:"2px solid rgba(255,255,255,.3)"}}>📋 Submit Referral</Btn>
+          <Btn sz="lg" onClick={()=>nav("intake")} style={{background:"rgba(255,255,255,.12)",color:"white",border:"2px solid rgba(255,255,255,.2)"}}>📋 Client Intake</Btn>
+          <Btn sz="lg" onClick={()=>nav("impact")} style={{background:"rgba(255,255,255,.08)",color:"white",border:"2px solid rgba(255,255,255,.15)"}}>💼 Impact Report</Btn>
+        </div>
+        <div style={{display:"flex",gap:28,paddingTop:22,borderTop:"1px solid rgba(255,255,255,.2)",flexWrap:"wrap"}}>
+          {[["4,280","Clients served"],["3.2 days","Time to contact"],["5","Populations served"],["18","Clinical modalities"],["21","EHR criteria"],["127","Partners"]].map(([n,l])=>(<div key={l}><div style={{fontSize:22,fontWeight:900,color:"white",lineHeight:1}}>{n}</div><div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginTop:3}}>{l}</div></div>))}
         </div>
       </div>
     </div>
@@ -4237,9 +4263,9 @@ const Home=({nav,setRole})=>(
         <div style={{fontSize:40,flexShrink:0}}>🏢</div>
         <div>
           <div style={{fontSize:17,fontWeight:900,color:"var(--teal-h)",marginBottom:6}}>EPSE Enterprises LLC</div>
-          <p style={{fontSize:14.5,color:"var(--tx3)",lineHeight:1.7,marginBottom:10}}>Birmingham, Alabama-based social enterprise developing technology for youth behavioral health, education equity, and community safety. E-Connect is EPSE's flagship platform — patent-pending (Application No. 63875629). Built to eliminate fragmentation in care delivery for underserved youth ages 10–21.</p>
+          <p style={{fontSize:14.5,color:"var(--tx3)",lineHeight:1.7,marginBottom:10}}>EPSE Enterprises LLC is a social enterprise building technology to transform behavioral health coordination and access. E-Connect is our flagship platform — a secure, consent-aware system that connects youth, adults, and veterans to licensed behavioral health providers, care coordinators, schools, families, and VA services. Patent-pending (Application No. 63875629). Designed to eliminate fragmentation in care delivery across all populations and communities.</p>
           <div style={{display:"flex",gap:9,flexWrap:"wrap"}}>
-            <Badge v="teal">📍 Birmingham, Alabama</Badge><Badge v="blue">Patent App. 63875629</Badge><Badge v="green">HIPAA-Informed</Badge><Badge v="purple">FERPA-Aware</Badge>
+            <Badge v="blue">Patent App. 63875629</Badge><Badge v="green">HIPAA-Informed</Badge><Badge v="purple">FERPA-Aware</Badge><Badge v="amber">🌱 Youth · Adult · Veteran</Badge>
             <a href="https://www.epse2021.org" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 11px",borderRadius:99,fontSize:13,fontWeight:800,background:"#C9F5EC",color:"#0A5E52",textDecoration:"none"}}>🌐 epse2021.org</a>
           </div>
         </div>
@@ -4247,7 +4273,22 @@ const Home=({nav,setRole})=>(
     </Card>
     <SH title="Choose your portal" sub="Select the role that matches you to get started" mb={16}/>
     <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))",gap:12,marginBottom:26}}>
-      {[{e:"🌱",t:"Youth & Teen",d:"Check-ins, journaling, 12 coping activities",role:"Youth",page:"youth",bg:"#EDFAF6",bdr:"#4DB8A4",tc:"#0C7A6A"},{e:"📓",t:"Journaling",d:"18 therapeutic modalities + mood tracking",role:"Youth",page:"journal",bg:"#F0FDF9",bdr:"#6EE7B7",tc:"#047857"},{e:"🏡",t:"Parent Portal",d:"Support requests, consent, referral tracking",role:"Parent",page:"parent",bg:"#EFF6FF",bdr:"#93C5FD",tc:"#1D4ED8"},{e:"🏫",t:"School Counselor",d:"FERPA-aware referral submission",role:"School",page:"school",bg:"#FFFBEB",bdr:"#FCD34D",tc:"#92400E"},{e:"🩺",t:"Provider",d:"Referrals, CSSR screenings, caseload",role:"Provider",page:"provider",bg:"#ECFDF5",bdr:"#6EE7B7",tc:"#047857"},{e:"🔗",t:"Care Coordinator",d:"Case management, matching, analytics",role:"Admin",page:"coordinator",bg:"#F5F3FF",bdr:"#C4B5FD",tc:"#5B21B6"},{e:"🧪",t:"CSSR Screening",d:"Columbia Suicide Severity Rating Scale",role:"Provider",page:"cssrs",bg:"#FFF5F5",bdr:"#FCA5A5",tc:"#B91C1C"},{e:"🛡️",t:"Safety Plan",d:"Co-build personalized safety plans",role:"Youth",page:"safety",bg:"#ECFDF5",bdr:"#6EE7B7",tc:"#047857"},{e:"👩‍⚕️",t:"Provider Matching",d:"AI-assisted provider profiles and selection",role:"Admin",page:"providers",bg:"#EFF6FF",bdr:"#93C5FD",tc:"#1D4ED8"},{e:"💼",t:"Impact Report",d:"Funder & investor-ready analytics",role:"Admin",page:"impact",bg:"var(--bg)",bdr:"var(--bdr)",tc:"var(--tx2)"}].map(p=>(
+      {[
+        {e:"🌱",t:"Early Youth",     d:"Ages 10–14 · Check-ins, journaling, parent support, coping toolkit",  role:"Youth",   page:"youth",       bg:"#EDFAF6",bdr:"#4DB8A4",tc:"#0C7A6A"},
+        {e:"🌿",t:"Middle Youth",    d:"Ages 15–17 · Mood tracking, counselor support, goal setting",         role:"Youth",   page:"youth",       bg:"#EDE9FE",bdr:"#C4B5FD",tc:"#5B21B6"},
+        {e:"🌳",t:"Older Youth",     d:"Ages 18–24 · Transition planning, independent care management",       role:"Youth",   page:"youth",       bg:"#D1FAE5",bdr:"#6EE7B7",tc:"#047857"},
+        {e:"👤",t:"Adult",           d:"Ages 25+ · Care coordination, appointments, wellness plans",          role:"Youth",   page:"youth",       bg:"#FEF3C7",bdr:"#FCD34D",tc:"#92400E"},
+        {e:"🎖️",t:"Veteran",        d:"Military / Veteran · Crisis support, VA coordination, peer support",  role:"Youth",   page:"youth",       bg:"#FEE2E2",bdr:"#FCA5A5",tc:"#7F1D1D"},
+        {e:"📓",t:"Journaling",      d:"18 therapeutic modalities + mood tracking",                           role:"Youth",   page:"journal",     bg:"#F0FDF9",bdr:"#6EE7B7",tc:"#047857"},
+        {e:"🏡",t:"Parent Portal",   d:"Support requests, consent settings, referral tracking",               role:"Parent",  page:"parent",      bg:"#EFF6FF",bdr:"#93C5FD",tc:"#1D4ED8"},
+        {e:"🏫",t:"School Counselor",d:"FERPA-aware referral submission and tracking",                        role:"School",  page:"school",      bg:"#FFFBEB",bdr:"#FCD34D",tc:"#92400E"},
+        {e:"📋",t:"Client Intake",   d:"21 EHR fields · All populations · DOB · auto-population assign",     role:"Admin",   page:"intake",      bg:"#F0F9FF",bdr:"#7DD3FC",tc:"#0369A1"},
+        {e:"🩺",t:"Provider",        d:"Referrals, C-SSRS screenings, caseload management",                  role:"Provider",page:"provider",    bg:"#ECFDF5",bdr:"#6EE7B7",tc:"#047857"},
+        {e:"🔗",t:"Care Coordinator",d:"Case management, provider matching, analytics",                       role:"Admin",   page:"coordinator", bg:"#F5F3FF",bdr:"#C4B5FD",tc:"#5B21B6"},
+        {e:"👩‍⚕️",t:"Provider Matching",d:"Population-aware matching · Veteran specialists · 7 providers",  role:"Admin",   page:"providers",   bg:"#EFF6FF",bdr:"#93C5FD",tc:"#1D4ED8"},
+        {e:"🛡️",t:"Safety Plan",    d:"Co-build personalized safety plans with your care team",              role:"Youth",   page:"safety",      bg:"#ECFDF5",bdr:"#6EE7B7",tc:"#047857"},
+        {e:"💼",t:"Impact Report",   d:"Funder and investor-ready analytics — confidential",                  role:"Admin",   page:"impact",      bg:"var(--bg)",bdr:"var(--bdr)",tc:"var(--tx2)"},
+      ].map(p=>(
         <Card key={p.t} sx={{background:p.bg,border:`2px solid ${p.bdr}`,textAlign:"center",padding:"16px 12px",cursor:"pointer"}} onClick={()=>{setRole(p.role);nav(p.page);}}>
           <div style={{fontSize:26,marginBottom:8}}>{p.e}</div>
           <div style={{fontSize:13.5,fontWeight:800,marginBottom:4,color:p.tc}}>{p.t}</div>
@@ -4255,7 +4296,7 @@ const Home=({nav,setRole})=>(
         </Card>
       ))}
     </div>
-    <Alert type="danger">🚨 <strong>Crisis Disclaimer:</strong> E-Connect Youth is not a crisis service. If a youth is in immediate danger, call <strong>988</strong> or <strong>911</strong>.</Alert>
+    <Alert type="danger">🚨 <strong>Crisis Disclaimer:</strong> E-Connect is not a crisis service. If anyone is in immediate danger, call <strong>988</strong> (Suicide and Crisis Lifeline) or <strong>911</strong>. Veterans: call or text 988 then press <strong>1</strong> for the Veterans Crisis Line.</Alert>
   </div>
 );
 
