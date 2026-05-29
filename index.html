@@ -2053,7 +2053,13 @@ const SchoolForm=()=>{
             <h2 style={{fontSize:15,fontWeight:800,marginBottom:14,paddingBottom:12,borderBottom:"1px solid var(--bdr-lt)"}}>👤 Student information</h2>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               {[["First name","Alex"],["Last name","Martinez"],["Grade","10th Grade"],["School","Jefferson High School"]].map(([l,v])=>(
-                <div key={l}><label style={{display:"block",fontSize:13.5,fontWeight:700,color:"var(--tx3)",marginBottom:5}}>{l}</label>{l==="Grade"?<select style={iSt} onFocus={iFoc} onBlur={iBlr}><option>{v}</option></select>:<input defaultValue={v} style={iSt} onFocus={iFoc} onBlur={iBlr}/></div>
+                <div key={l} style={{display:"flex",flexDirection:"column"}}>
+                  <label style={{display:"block",fontSize:13.5,fontWeight:700,color:"var(--tx3)",marginBottom:5}}>{l}</label>
+                  {l==="Grade"
+                    ? <select style={iSt} onFocus={iFoc} onBlur={iBlr}><option>10th Grade</option><option>9th Grade</option><option>11th Grade</option><option>12th Grade</option></select>
+                    : <input defaultValue={v} style={iSt} onFocus={iFoc} onBlur={iBlr}/>
+                  }
+                </div>
               ))}
             </div>
           </Card>
