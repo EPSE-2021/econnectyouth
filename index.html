@@ -1148,18 +1148,34 @@ const RoleBar=({role,setRole,nav,onNotif,lang,setLang,simpleMode,setSimpleMode,s
 // A — YOUTH DASHBOARD (teen-friendly, bright, encouraging)
 // ══════════════════════════════════════════════════════════
 const YouthDash=({nav,currentUser})=>{
-  // Derive population from currentUser or default to MIDDLE_YOUTH for Jordan T. demo
-  const pop=(currentUser?.veteran&&currentUser?.calculatedAge>=18)?"ADULT":(currentUser?.population||"MIDDLE_YOUTH");
+  // Dynamic identity from signed-in user
+  const firstName=currentUser?.name?.split(" ")[0]||"there";
+  const isVeteran=currentUser?.veteran||false;
+  const age=currentUser?.calculatedAge||(currentUser?.dob?calcAge(currentUser.dob):null);
+  const pop=(isVeteran&&age>=18)?"ADULT":(currentUser?.population||"MIDDLE_YOUTH");
   const meta=POPULATION_META[pop]||POPULATION_META.MIDDLE_YOUTH;
   const teamLabel=meta.teamLabel;
-  const[mood,setMood]=useState(4);const[stress,setStress]=useState(3);
-  const[note,setNote]=useState("");const[done,setDone]=useState(false);
-  const[msg,setMsg]=useState("");
-  const[msgs,setMsgs]=useState([
-    {from:"Ms. Rivera",time:"9:15 AM",text:"Hi Jordan — how did the breathing exercises go this week?",mine:false},
+  // Population-aware greeting
+  const greeting=(pop==="EARLY_YOUTH"||pop==="MIDDLE_YOUTH")?`👋 Hey ${firstName}, you showed up today!`:isVeteran?`👋 Welcome back, ${firstName}.`:`👋 Welcome back, ${firstName}.`;
+  const greetingSub=(pop==="EARLY_YOUTH"||pop==="MIDDLE_YOUTH")?"That takes courage. This is your safe space — share only what you are comfortable with.":isVeteran?"Your care network is ready. Connect with your VA coordinator, manage appointments, and access veteran resources.":"Your care network is here. Check in, review appointments, and connect with your team.";
+  // Population-aware default messages
+  const defaultMsgs=isVeteran?[
+    {from:"VA Care Coordinator",time:"9:15 AM",text:`Hi ${firstName} — your next appointment with the VA Community Care team is confirmed. How are you feeling this week?`,mine:false},
+    {from:"Me",time:"9:40 AM",text:"Better this week. The breathing exercises have been helping.",mine:true},
+  ]:(pop==="ADULT"||pop==="OLDER_YOUTH")?[
+    {from:"Care Coordinator",time:"9:15 AM",text:`Hi ${firstName} — checking in before your upcoming appointment. Any updates on how you have been feeling?`,mine:false},
+    {from:"Me",time:"9:32 AM",text:"Doing better this week. Looking forward to the session.",mine:true},
+  ]:[
+    {from:"Fictional Provider — Ms. Rivera",time:"9:15 AM",text:`Hi ${firstName} — how did the breathing exercises go this week?`,mine:false},
     {from:"Me",time:"9:32 AM",text:"They really helped! The 4-7-8 one especially before school.",mine:true},
-    {from:"Ms. Rivera",time:"9:35 AM",text:"That's wonderful! Dr. Williams will love to hear it Thursday. 🌟",mine:false},
-  ]);
+    {from:"Fictional Provider — Ms. Rivera",time:"9:35 AM",text:"Wonderful! Your care team will love hearing that. Keep it up!",mine:false},
+  ];
+  const[mood,setMood]=useState(4);
+  const[stress,setStress]=useState(3);
+  const[note,setNote]=useState("");
+  const[done,setDone]=useState(false);
+  const[msg,setMsg]=useState("");
+  const[msgs,setMsgs]=useState(defaultMsgs);
   const send=()=>{if(!msg.trim())return;setMsgs(m=>[...m,{from:"Me",time:"Now",text:msg,mine:true}]);setMsg("");};
   const moods=[{e:"😄",l:"Amazing!",v:5,c:"#059669"},{e:"😊",l:"Good",v:4,c:"#0C7A6A"},{e:"😐",l:"Okay",v:3,c:"#D97706"},{e:"😔",l:"Low",v:2,c:"#DC6B1A"},{e:"😰",l:"Tough",v:1,c:"#DC2626"}];
   const streak=7;
@@ -1187,8 +1203,9 @@ const YouthDash=({nav,currentUser})=>{
       <div style={{background:"linear-gradient(135deg,#0C7A6A,#1D4ED8)",borderRadius:"var(--r-lg)",padding:"28px 32px",marginBottom:22,position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-20,top:-20,width:180,height:180,borderRadius:"50%",background:"rgba(255,255,255,.07)"}}/>
         <div style={{position:"relative",zIndex:2}}>
-          <div style={{fontSize:26,fontWeight:900,color:"white",marginBottom:6}}>👋 Hey Jordan, you showed up today!</div>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.8)",marginBottom:16}}>That takes courage. This is your safe space — share only what you're comfortable with.</p>
+          <div style={{fontSize:26,fontWeight:900,color:"white",marginBottom:6}}>{greeting}</div>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.8)",marginBottom:16}}>{greetingSub}</p>
+          {isVeteran&&<div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(255,255,255,.18)",border:"1px solid rgba(255,255,255,.3)",borderRadius:99,padding:"4px 12px",fontSize:13,fontWeight:800,color:"white",marginBottom:8}}>🎖️ Veteran · {currentUser?.branch||""} {currentUser?.era||""}</div>}
           <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
             <div style={{background:"rgba(255,255,255,.15)",borderRadius:"var(--r-sm)",padding:"10px 16px",textAlign:"center"}}>
               <div style={{fontSize:22,fontWeight:900,color:"white"}}>{streak} 🔥</div>
@@ -1206,7 +1223,14 @@ const YouthDash=({nav,currentUser})=>{
         </div>
       </div>
 
-      <div style={{marginBottom:16}}><Alert type="info">💬 New message from <strong>Ms. Rivera</strong> · Next session: <strong>Thursday, May 22 at 3:30 PM</strong> with Dr. Williams</Alert></div>
+      <div style={{marginBottom:16}}>
+        {isVeteran
+          ? <Alert type="info">🎖️ Welcome, {firstName}. Your VA care coordinator has been notified. <strong>Veterans Crisis Line:</strong> call or text <strong>988</strong> then press <strong>1</strong>.</Alert>
+          : (pop==="ADULT"||pop==="OLDER_YOUTH")
+            ? <Alert type="info">💬 Your care coordinator is available. Next session pending scheduling — visit <strong>Appointments</strong> to book.</Alert>
+            : <Alert type="info">💬 New message from your care team · Next session: <strong>Thursday, May 22 at 3:30 PM</strong></Alert>
+        }
+      </div>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
@@ -1267,8 +1291,20 @@ const YouthDash=({nav,currentUser})=>{
 
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
           <Card>
-            <h2 style={{fontSize:15,fontWeight:800,marginBottom:14}}>🩺 {teamLabel}</h2>
-            {[{init:"SR",name:"Fictional Provider — Ms. Sofia Rivera",role:"School Counselor · Parker HS",bg:"#EDFAF6",c:"#0C7A6A",status:"Online now"},{init:"MW",name:"Fictional Provider — Dr. Marcus Williams",role:"Therapist · Jefferson County BH",bg:"#EFF6FF",c:"#1D4ED8",status:"Next: May 22"},{init:"ML",name:"Fictional Provider — Maria Lopez",role:"Care Coordinator",bg:"#F5F3FF",c:"#5B21B6",status:"Available"}].map((p,i,a)=>(
+            <h2 style={{fontSize:15,fontWeight:800,marginBottom:14}}>🩺 {teamLabel}{isVeteran&&" · VA Coordinated"}</h2>
+            {(isVeteran?[
+              {init:"VA",name:"VA Community Care Coordinator",role:"VA Network · Alabama",bg:"#FEE2E2",c:"#7F1D1D",status:"Available"},
+              {init:"FP",name:"Fictional Provider — VA Behavioral Health",role:"PTSD · Trauma · Reintegration",bg:"#FFF5F5",c:"#B91C1C",status:"Telehealth available"},
+              {init:"ML",name:"Fictional Provider — Maria Lopez",role:"E-Connect Care Coordinator",bg:"#F5F3FF",c:"#5B21B6",status:"Available"},
+            ]:(pop==="ADULT"||pop==="OLDER_YOUTH")?[
+              {init:"CC",name:"Fictional Provider — Care Coordinator",role:"E-Connect Care Network",bg:"#EDFAF6",c:"#0C7A6A",status:"Available"},
+              {init:"FP",name:"Fictional Provider — Assigned Therapist",role:"Behavioral Health Provider",bg:"#EFF6FF",c:"#1D4ED8",status:"Pending scheduling"},
+              {init:"ML",name:"Fictional Provider — Maria Lopez",role:"Care Coordinator",bg:"#F5F3FF",c:"#5B21B6",status:"Available"},
+            ]:[
+              {init:"SR",name:"Fictional Provider — Ms. Sofia Rivera",role:"School Counselor · Parker HS",bg:"#EDFAF6",c:"#0C7A6A",status:"Online now"},
+              {init:"MW",name:"Fictional Provider — Dr. Marcus Williams",role:"Therapist · Jefferson County BH",bg:"#EFF6FF",c:"#1D4ED8",status:"Next: May 22"},
+              {init:"ML",name:"Fictional Provider — Maria Lopez",role:"Care Coordinator",bg:"#F5F3FF",c:"#5B21B6",status:"Available"},
+            ]).map((p,i,a)=>(
               <div key={p.name}>
                 {i>0&&<HR my={10}/>}
                 <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -1292,8 +1328,12 @@ const YouthDash=({nav,currentUser})=>{
               <h2 style={{fontSize:15,fontWeight:800,color:"var(--teal-h)"}}>📅 Next appointment</h2>
               <Badge v="teal">Confirmed ✓</Badge>
             </div>
-            <div style={{fontSize:18,fontWeight:900,marginBottom:4}}>Thursday, May 22 — 3:30 PM</div>
-            <div style={{fontSize:13.5,color:"var(--teal-h)",marginBottom:14}}>Dr. Marcus Williams · Telehealth session · 60 min</div>
+            <div style={{fontSize:18,fontWeight:900,marginBottom:4}}>
+              {isVeteran?"Contact VA coordinator to schedule":"Thursday, May 22 — 3:30 PM"}
+            </div>
+            <div style={{fontSize:13.5,color:"var(--teal-h)",marginBottom:14}}>
+              {isVeteran?"VA Community Care · Telehealth available":(pop==="ADULT"||pop==="OLDER_YOUTH")?"Care coordinator · Pending confirmation":"Fictional Provider — Dr. Marcus Williams · Telehealth · 60 min"}
+            </div>
             <div style={{display:"flex",gap:8}}><Btn v="pri" sz="sm">Join session</Btn><Btn v="sec" sz="sm" onClick={()=>nav("appointments")}>Reschedule</Btn></div>
           </Card>
 
